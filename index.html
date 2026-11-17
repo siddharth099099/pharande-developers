@@ -209,7 +209,9 @@ $('#d').min=new Date().toISOString().slice(0,10);
 $('#f').onsubmit=e=>{e.preventDefault();const n=$('#n').value.trim(),p=$('#p').value.trim(),er=$('#er');
 if(!n){er.textContent=L('Enter your name.','तुमचे नाव लिहा.');return}
 if(!/^[6-9]\d{9}$/.test(p)){er.textContent=L('Enter a valid 10-digit mobile number.','योग्य १० अंकी मोबाईल नंबर लिहा.');return}
-er.textContent='';let t=`Hello Pharande Developers,\nName: ${n}\nMobile: ${p}\nInterested in: ${$('#i').value}`;
+er.textContent='';
+if(typeof gtag==='function')gtag('event','generate_lead',{form_name:'property_enquiry'});
+let t=`Hello Pharande Developers,\nName: ${n}\nMobile: ${p}\nInterested in: ${$('#i').value}`;
 if(SLOT)t+=`\nPreferred time: ${SLOT}`;if($('#s').value)t+=`\nPlot size: ${$('#s').value} gunthe`;if($('#d').value)t+=`\nPreferred visit date: ${$('#d').value}`;if($('#m').value.trim())t+=`\nMessage: ${$('#m').value.trim()}`;send(t)};
 let sv;try{sv=localStorage.getItem('pl')}catch(e){}setLang(sv=='mr'?'mr':'en');
 
@@ -246,4 +248,40 @@ if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>es.fo
 const hi=$('.hero>img'),pg=$('#pg');let t=0;
 const upd=()=>{t=0;const y=scrollY,m=document.documentElement.scrollHeight-innerHeight;pg.style.width=(m>0?y/m*100:0)+'%';if(!rm&&y<innerHeight*1.2)hi.style.transform=`translateY(${y*.22}px) scale(1.12)`};
 addEventListener('scroll',()=>{if(!t)t=requestAnimationFrame(upd)},{passive:true});upd()})();
+
+// GA4 interaction tracking for Pharande Developers.
+// Only event names and non-personal context are sent; form fields are never sent to Analytics.
+(()=> {
+  const track=(name,params={})=>{
+    if(typeof window.gtag==='function') window.gtag('event',name,params);
+  };
+
+  // Track WhatsApp links, including links opened by the site's existing send() helper.
+  document.addEventListener('click',e=>{
+    const a=e.target.closest && e.target.closest('a');
+    if(!a) return;
+    const href=a.getAttribute('href')||'';
+    if(/^https?:\/\/(wa\.me|api\.whatsapp\.com)\//i.test(href)){
+      track('whatsapp_click',{link_url:href.split('?')[0]});
+    }
+    if(/^tel:/i.test(href)){
+      track('phone_click',{link_url:href});
+    }
+    if(a.matches('[data-visit]')){
+      track('site_visit_click',{link_text:(a.textContent||'').trim().slice(0,80)});
+    }
+  },true);
+
+  // Track calculator use when a visitor changes a calculator input.
+  document.addEventListener('change',e=>{
+    const id=e.target && e.target.id;
+    if(!id) return;
+    const loan=['la','lr','lt'].includes(id);
+    const property=['gn','ba','br'].includes(id);
+    if(loan || property){
+      track('calculator_use',{calculator_name:loan?'loan_emi':'property_estimate'});
+    }
+  },true);
+})();
+
 </script></body></html>
